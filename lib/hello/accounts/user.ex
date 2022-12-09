@@ -1,6 +1,8 @@
 defmodule Hello.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Hello.Accounts.User.Hello.Accounts.Profile
+  alias Hello.Accounts.Profile
 
   schema "users" do
     field :email, :string
@@ -8,7 +10,19 @@ defmodule Hello.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
+    embeds_one :profile, Profile do
+      field :online, :boolean
+      field :dark_mode, :boolean
+      field :visibility, Ecto.Enum, values: [:public, :private, :friends_only]
+    end
+
     timestamps()
+  end
+
+  def user_chnageset(user, attrs \\ %{}) do
+    user
+    |> cast(attrs, ~w(email password))
+    |> cast_embed(:profile, required: true, with: &Profile.changeset/2)
   end
 
   @doc """
